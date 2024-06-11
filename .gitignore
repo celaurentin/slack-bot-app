@@ -1,0 +1,22 @@
+logs
+target
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+.idea/workspace.xml
+
+.env
+.idea
+.bsp
+
+.bloop
+project/metals.sbt
+
+
+*.iml
+
+#ignore .java-version by jenv
+.java-version
+
+.DS_Store
