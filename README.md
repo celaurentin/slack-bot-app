@@ -10,6 +10,10 @@ This Slack App use [Slack Socket Mode](https://api.slack.com/) in [Scala 3](http
 
 ```bash
 brew install sbt
-export SLACK_BOT_TOKEN=xoxb-(your own value)
-export SLACK_APP_TOKEN=xapp-(your own value)
+export SLACK_BOT_TOKEN=<your_token> 
+export SLACK_APP_TOKEN=<your_token>
 sbt run
+```
+
+Slack's command:
+```/TELLME```

@@ -1,36 +1,34 @@
 import com.slack.api.app_backend.slash_commands.response.SlashCommandResponse
 import com.slack.api.bolt.App
 import com.slack.api.bolt.socket_mode.SocketModeApp
-import com.slack.api.model.Attachment
 import com.slack.api.model.block.Blocks.{asBlocks, input}
 import com.slack.api.model.block.composition.BlockCompositions.plainText
 import com.slack.api.model.block.element.BlockElements.plainTextInput
 import com.slack.api.model.view.Views.*
 
-import sys.process.*
-import java.util
 import scala.language.postfixOps
 
 @main def runSocketModeApp(): Unit = {
 
-  // Enable debug logging
   System.setProperty("org.slf4j.simpleLogger.log.com.slack.api", "debug")
 
-  // env variable SLACK_APP_TOKEN is required, i.e export SLACK_APP_TOKEN=xapp...
   val app = new App()
 
-  app.command("/hello", (req, ctx) => {
-    val userMessage = req.getPayload.getText
-    val responseMessage = s"""Heya ${req.getPayload.getUserName}! just echoing your words :nerd_face: "$userMessage""""
+  app.command("/tellme", (req, ctx) => {
+    ctx.ack()
+    val userQuestion = req.getPayload.getText
+    val userId = req.getPayload.getUserId
+    val channelId = req.getPayload.getChannelId
+    val channelName = req.getPayload.getChannelName
+    
+    val responseMessage = s"""Hi userId: $userId, you said "$userQuestion" at <#$channelId|$channelName>"""
 
-    val response = SlashCommandResponse.builder.responseType("in_channel").text(responseMessage).build
-
-    ctx.ack(response)
-  })
-
-  // Events API
-  app.message("Hello", (req, ctx) => {
-    ctx.say(s"Hi <@${req.getEvent.getUser}>!")
+    val response = SlashCommandResponse
+      .builder
+      .responseType("in_channel")
+      .text(responseMessage)
+      .build
+    ctx.respond(response)
     ctx.ack()
   })
 
@@ -56,7 +54,5 @@ import scala.language.postfixOps
     ctx.ack()
   })
 
-  // Establish a WebSocket connection and block the current thread
-  // env variable SLACK_APP_TOKEN is required
   new SocketModeApp(app).start()
 }
