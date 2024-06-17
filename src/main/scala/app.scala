@@ -1,17 +1,26 @@
-import com.slack.api.app_backend.slash_commands.response.SlashCommandResponse
 import com.slack.api.bolt.App
 import com.slack.api.bolt.socket_mode.SocketModeApp
 import com.slack.api.model.block.Blocks.{asBlocks, input}
 import com.slack.api.model.block.composition.BlockCompositions.plainText
 import com.slack.api.model.block.element.BlockElements.plainTextInput
 import com.slack.api.model.view.Views.*
+import org.slf4j.LoggerFactory
+import service.SlackBotService.buildCommandResponse
 
+import java.util.concurrent.Executors
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.language.postfixOps
+import scala.util.Random
 
 @main def runSocketModeApp(): Unit = {
 
-  System.setProperty("org.slf4j.simpleLogger.log.com.slack.api", "debug")
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(2))
 
+  // System.setProperty("org.slf4j.simpleLogger.log.com.slack.api", "debug")
+  val LOGGER = LoggerFactory.getLogger(classOf[Nothing])
+  val postMessages= Seq("Interesting question :sweat_smile:", "That's a great question :nerd_face:",
+    "uhm it's a good question :thinking_face:", "I'm happy to explain! :sweat_smile:",
+    "I'd be happy to answer! :sweat_smile:")
   val app = new App()
 
   app.command("/tellme", (req, ctx) => {
@@ -20,15 +29,17 @@ import scala.language.postfixOps
     val userId = req.getPayload.getUserId
     val channelId = req.getPayload.getChannelId
     val channelName = req.getPayload.getChannelName
-    
-    val responseMessage = s"""Hi userId: $userId, you said "$userQuestion" at <#$channelId|$channelName>"""
 
-    val response = SlashCommandResponse
-      .builder
-      .responseType("in_channel")
-      .text(responseMessage)
-      .build
-    ctx.respond(response)
+    LOGGER.info(s"Question: $userQuestion, User: $userId, Channel: $channelId, Channel name: $channelName")
+
+    val friendlyResponseMessage = s"""You've asked: "*$userQuestion*"... ${postMessages(Random.nextInt(postMessages.length))}"""
+
+    buildCommandResponse(friendlyResponseMessage).map(r => ctx.respond(r))
+    ctx.ack()
+
+    // Wrap the Ollama3 API into a Future to get the actual answer.
+    val actualAnswer = s"<the actual answer goes here>"
+    buildCommandResponse(actualAnswer).map(r => ctx.respond(r))
     ctx.ack()
   })
 
