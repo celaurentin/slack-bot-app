@@ -28,7 +28,7 @@ case class OllamaDocument(
   title: String,
   filename: String,
   user_id: String,
-  content: Chunk[Content]
+  content: Content
 )
 object OllamaDocument {
   given schema: Schema[OllamaDocument]       = DeriveSchema.gen[OllamaDocument]
