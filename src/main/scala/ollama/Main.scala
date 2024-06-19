@@ -9,8 +9,8 @@ import zio.http.*
 object Main extends ZIOAppDefault:
   private val app =
     for {
-      response <- OLlamaAdapter.executePrompt(PromptRequest(Model.llama3, "Game of life program"))
-      _        <- Console.ConsoleLive.printLine(response.toString)
+      response <- OLlamaAdapter.auth(AuthRequest("email", "password"))
+      _        <- Console.ConsoleLive.printLine(response)
     } yield ()
 
   def run: ZIO[Any, Object, Unit] = app.provide(Client.default, OLlamaAdapter.live)
