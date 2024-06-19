@@ -23,8 +23,7 @@ lazy val root = project
       "dev.zio"                       %% "zio-json"                % "0.7.0",
       "dev.zio"                       %% "zio-test-sbt"            % "2.1.1" % Test,
       "dev.zio"                       %% "zio-http"                % "3.0.0-RC8",
-      "dev.zio"                       %% "zio-schema-json"         % "1.2.1",
-      "com.github.devcdcc"            %% "ollama-zio"              % "0.1.0"
+      "dev.zio"                       %% "zio-schema-json"         % "1.2.1"
     ),
     scalacOptions ++= Seq(
       "-language:postfixOps",
