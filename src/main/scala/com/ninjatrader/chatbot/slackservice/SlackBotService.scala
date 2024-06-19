@@ -1,4 +1,4 @@
-package service
+package slackservice
 
 import com.slack.api.app_backend.slash_commands.response.SlashCommandResponse
 
@@ -8,7 +8,7 @@ object SlackBotService {
 
   def buildCommandResponse(
     responseMessage: String
-  )(implicit ec: ExecutionContext): Future[SlashCommandResponse] = {
+  ): Future[SlashCommandResponse] = {
     Future.successful(
       SlashCommandResponse
       .builder

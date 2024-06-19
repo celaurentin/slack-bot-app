@@ -1,0 +1,5 @@
+package adapters
+
+trait OpenWebUIAdapter {
+  
+}
