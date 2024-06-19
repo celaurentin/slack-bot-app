@@ -4,6 +4,7 @@ import domain.*
 import ollama.domain.*
 import zio.*
 import zio.http.*
+import zio.http.Header.Authorization.Bearer
 import zio.schema.codec.JsonCodec.*
 import zio.json.*
 
@@ -19,21 +20,39 @@ object OLlamaAdapter {
 
     override def getDocuments(bearerToken: String): IO[OLlamaError, Chunk[OllamaDocument]] = {
       val documentsURL = s"$url/api/v1/documents"
-      val request = Request
-        .get(documentsURL)
-        .addHeader("Authorization", s"Bearer $bearerToken")
-        .addHeader("Content-Type", "application/json")
-        .addHeader("Accept", "application/json")
-        .addHeader("Connection", "keep-alive")
+      import java.net.http.*
+      import java.net.*
+
+      val responseValue = ZIO
+        .attempt {
+          val client0 = java.net.http.HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()
+          val request0 = HttpRequest.newBuilder
+            .uri(URI.create(documentsURL))
+            .setHeader("Authorization", s"Bearer $bearerToken")
+            .build
+          client0.send(request0, java.net.http.HttpResponse.BodyHandlers.ofString)
+        }
+        .mapError(e => ConnectionOLlamaError(e.toString))
+
+//      val request = Request
+//        .get(documentsURL)
+//        .addHeader(Header.Host("localhost:3000"))
+//        .addHeader("Location", "http://localhost:3000/api/v1/documents")
+//        .addHeader("Content-Type", "application/json")
+//        .addHeader("Accept", "application/json")
+//        .addHeader("Connection", "keep-alive")
+
       for {
-        response <- client.request(request).mapError(e => ConnectionOLlamaError(e.toString))
-        body     <- response.body.asString.mapError(e => DeserializationOLlamaError(e.toString))
-        _        <- Console.ConsoleLive.printLine(response.status).ignore
-        _        <- Console.ConsoleLive.printLine(response.status.code).ignore
-        _        <- Console.ConsoleLive.printLine(response.headers.toSeq).ignore
+
+        response <- responseValue
+        // client.request(request).mapError(e => ConnectionOLlamaError(e.toString))
+        body = response.body()
+//        _        <- Console.ConsoleLive.printLine(response.status).ignore
+//        _        <- Console.ConsoleLive.printLine(response.status.code).ignore
+//        _        <- Console.ConsoleLive.printLine(response.headers.toSeq).ignore
         response <- ZIO.fromEither(body.fromJson[Chunk[OllamaDocument]]).mapError(e => DeserializationOLlamaError(e.toString))
       } yield response
-    }.provide(Scope.default)
+    }
 
     def auth(authRequest: AuthRequest): IO[OLlamaError, AuthResponse] = {
       val authURL = s"$url/api/v1/auths/signin"

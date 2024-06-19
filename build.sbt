@@ -22,7 +22,7 @@ lazy val root = project
       "dev.zio"                       %% "zio-test"                % "2.1.3" % Test,
       "dev.zio"                       %% "zio-json"                % "0.7.0",
       "dev.zio"                       %% "zio-test-sbt"            % "2.1.3" % Test,
-      "dev.zio"                       %% "zio-http"                % "3.0.0-RC8",
+      "dev.zio"                       %% "zio-http"                % "3.0.0-RC7",
       "dev.zio"                       %% "zio-schema-json"         % "1.2.1"
     ),
     scalacOptions ++= Seq(
