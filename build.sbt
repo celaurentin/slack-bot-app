@@ -18,10 +18,10 @@ lazy val root = project
       "com.softwaremill.sttp.client4" %% "core"                    % "4.0.0-M6",
       "org.glassfish.tyrus.bundles"    % "tyrus-standalone-client" % "1.19",
       "org.slf4j"                      % "slf4j-simple"            % "1.7.31",
-      "dev.zio"                       %% "zio"                     % "2.1.1",
-      "dev.zio"                       %% "zio-test"                % "2.1.1" % Test,
+      "dev.zio"                       %% "zio"                     % "2.1.3",
+      "dev.zio"                       %% "zio-test"                % "2.1.3" % Test,
       "dev.zio"                       %% "zio-json"                % "0.7.0",
-      "dev.zio"                       %% "zio-test-sbt"            % "2.1.1" % Test,
+      "dev.zio"                       %% "zio-test-sbt"            % "2.1.3" % Test,
       "dev.zio"                       %% "zio-http"                % "3.0.0-RC8",
       "dev.zio"                       %% "zio-schema-json"         % "1.2.1"
     ),
