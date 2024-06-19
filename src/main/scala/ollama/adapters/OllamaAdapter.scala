@@ -17,12 +17,13 @@ object OLlamaAdapter {
   private case class OLlamaAdapterLive(client: Client) extends OLlamaAdapter {
     private val url = "http://localhost:3000"
 
-    override def getDocuments: IO[OLlamaError, Chunk[OllamaDocument]] = {
+    override def getDocuments(bearerToken: String): IO[OLlamaError, Chunk[OllamaDocument]] = {
       val documentsURL = s"$url/api/v1/documents"
-      val request      = Request.get(documentsURL)
+      val request      = Request.get(documentsURL).addHeader("Authorization", s"Bearer $bearerToken")
       for {
         response <- client.request(request).mapError(e => ConnectionOLlamaError(e.toString)).retry(Schedule.recurs(10) && Schedule.exponential(1.second))
         body     <- response.body.asString.mapError(e => DeserializationOLlamaError(e.toString))
+        _        <- Console.ConsoleLive.printLine(body).ignore
         response <- ZIO.fromEither(body.fromJson[Chunk[OllamaDocument]]).mapError(e => DeserializationOLlamaError(e.toString))
       } yield response
     }.provide(Scope.default)
@@ -33,6 +34,7 @@ object OLlamaAdapter {
       for {
         response <- client.request(request).mapError(e => ConnectionOLlamaError(e.toString)).retry(Schedule.recurs(10) && Schedule.exponential(1.second))
         body     <- response.body.asString.mapError(e => DeserializationOLlamaError(e.toString))
+        // _        <- Console.ConsoleLive.printLine(body).ignore
         response <- ZIO.fromEither(body.fromJson[AuthResponse]).mapError(e => DeserializationOLlamaError(e.toString))
       } yield response
     }.provide(Scope.default)
@@ -48,6 +50,8 @@ object OLlamaAdapter {
     }.provide(Scope.default)
   }
 
+  def auth(authRequest: AuthRequest): ZIO[OLlamaAdapter, OLlamaError, AuthResponse]                = ZIO.serviceWithZIO(_.auth(authRequest))
+  def getDocuments(bearerToken: String): ZIO[OLlamaAdapter, OLlamaError, Chunk[OllamaDocument]]    = ZIO.serviceWithZIO(_.getDocuments(bearerToken))
   def executePrompt(promptRequest: PromptRequest): ZIO[OLlamaAdapter, OLlamaError, PromptResponse] = ZIO.serviceWithZIO(_.executePrompt(promptRequest))
   def getDocuments: ZIO[OLlamaAdapter, OLlamaError, Chunk[OllamaDocument]]                         = ZIO.serviceWithZIO(_.getDocuments)
   def auth(authRequest: AuthRequest): ZIO[OLlamaAdapter, OLlamaError, AuthResponse]                = ZIO.serviceWithZIO(_.auth(authRequest))
