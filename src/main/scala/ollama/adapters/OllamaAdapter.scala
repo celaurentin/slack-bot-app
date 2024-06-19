@@ -9,7 +9,7 @@ import zio.json.*
 
 trait OLlamaAdapter {
   def auth(authRequest: AuthRequest): IO[OLlamaError, AuthResponse]
-  def getDocuments: IO[OLlamaError, Chunk[OllamaDocument]]
+  def getDocuments(bearerToken: String): IO[OLlamaError, Chunk[OllamaDocument]]
   def executePrompt(promptRequest: PromptRequest): IO[OLlamaError, PromptResponse]
 }
 
@@ -17,9 +17,9 @@ object OLlamaAdapter {
   private case class OLlamaAdapterLive(client: Client) extends OLlamaAdapter {
     private val url = "http://localhost:3000"
 
-    override def getDocuments(bearerToken: String): IO[OLlamaError, Chunk[OllamaDocument]] = {
+    override def getDocuments(bearerToken: String): IO[OLlamaError, Seq[OllamaDocument]] = {
       val documentsURL = s"$url/api/v1/documents"
-      val request      = Request.get(documentsURL).addHeader("Authorization", s"Bearer $bearerToken")
+      val request      = Request.get(documentsURL).addHeader("Authorization Bearer", bearerToken)
       for {
         response <- client.request(request).mapError(e => ConnectionOLlamaError(e.toString)).retry(Schedule.recurs(10) && Schedule.exponential(1.second))
         body     <- response.body.asString.mapError(e => DeserializationOLlamaError(e.toString))
@@ -53,9 +53,7 @@ object OLlamaAdapter {
   def auth(authRequest: AuthRequest): ZIO[OLlamaAdapter, OLlamaError, AuthResponse]                = ZIO.serviceWithZIO(_.auth(authRequest))
   def getDocuments(bearerToken: String): ZIO[OLlamaAdapter, OLlamaError, Chunk[OllamaDocument]]    = ZIO.serviceWithZIO(_.getDocuments(bearerToken))
   def executePrompt(promptRequest: PromptRequest): ZIO[OLlamaAdapter, OLlamaError, PromptResponse] = ZIO.serviceWithZIO(_.executePrompt(promptRequest))
-  def getDocuments: ZIO[OLlamaAdapter, OLlamaError, Chunk[OllamaDocument]]                         = ZIO.serviceWithZIO(_.getDocuments)
-  def auth(authRequest: AuthRequest): ZIO[OLlamaAdapter, OLlamaError, AuthResponse]                = ZIO.serviceWithZIO(_.auth(authRequest))
-
+  
   lazy val live: ZLayer[Client, Nothing, OLlamaAdapter]   = ZLayer.fromFunction(OLlamaAdapterLive(_))
   lazy val default: ZLayer[Any, Throwable, OLlamaAdapter] = Client.default >>> ZLayer.fromFunction(OLlamaAdapterLive(_))
 }
