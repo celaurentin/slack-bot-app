@@ -22,7 +22,7 @@ import zio.schema.*
  */
 @jsonHintNames(SnakeCase)
 enum Model {
-  case llama3
+  case `llama3:8b`
 }
 object Model {
   given jsonCodec: JsonCodec[Model] = DeriveJsonCodec.gen[Model]
@@ -50,9 +50,31 @@ object Model {
 //  def keepAlive: Option[String]
 //}
 
+case class Prompt(
+    content: String,
+    role: String
+)
+
+object Prompt {
+  implicit val schema: Schema[Prompt] = DeriveSchema.gen[Prompt]
+}
+
+case class Docs(
+   collection_name: String,
+   content: Chunk[Tag],
+   filename: String,
+   name: String,
+   title: String,
+   `type`: String,
+   user_id: String
+)
+
+object Docs {
+  implicit val schema: Schema[Docs] = DeriveSchema.gen[Docs]
+}
+
 case class PromptRequest(
     model: Model,
-    prompt: String,
     stream: Option[Boolean] = Some(false),
     images: Option[Chunk[String]] = None,
     format: Option[String] = None,
@@ -61,7 +83,11 @@ case class PromptRequest(
     template: Option[String] = None,
     context: Option[String] = None,
     raw: Option[Boolean] = None,
-    keep_alive: Option[String] = None
+    keep_alive: Option[String] = None,
+    chat_id: String,
+    citations: Option[Boolean] = Some(true),
+    messages: Chunk[Prompt],
+    docs: Chunk[Docs]
 )
 
 object PromptRequest {

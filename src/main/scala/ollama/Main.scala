@@ -11,6 +11,7 @@ object Main extends ZIOAppDefault:
     for {
       authorization <- OLlamaAdapter.auth(AuthRequest("cesar.laurentin@ninjatrader.com", "Arepa123++"))
       documents     <- OLlamaAdapter.getDocuments(authorization.token)
+      //answers       <- OLlamaAdapter.executePrompt()
       _             <- Console.ConsoleLive.printLine(documents)
     } yield ()
 
