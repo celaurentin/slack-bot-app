@@ -1,11 +1,10 @@
 package ollama.adapters
 
 import domain.*
-
+import ollama.domain.*
 import zio.*
 import zio.http.*
 import zio.schema.codec.JsonCodec.*
-
 import zio.json.*
 
 trait OLlamaAdapter {

@@ -1,4 +1,5 @@
-package ollama.domain
+package ollama
+package domain
 
 import zio.Chunk
 import zio.json.*

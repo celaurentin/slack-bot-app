@@ -9,7 +9,6 @@ import zio.http.*
 object Main extends ZIOAppDefault:
   private val app =
     for {
-      _        <- Console.ConsoleLive.printLine(l)
       response <- OLlamaAdapter.executePrompt(PromptRequest(Model.llama3, "Game of life program"))
       _        <- Console.ConsoleLive.printLine(response.toString)
     } yield ()
