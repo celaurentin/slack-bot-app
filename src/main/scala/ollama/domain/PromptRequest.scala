@@ -1,6 +1,6 @@
-package ollama
-package domain
+package ollama.domain
 
+import ollama.domain.Model.`llama3:8b`
 import zio.Chunk
 import zio.json.*
 import zio.schema.*
@@ -25,6 +25,7 @@ enum Model {
   case `llama3:8b`
 }
 object Model {
+  given schema: Schema[Model] = DeriveSchema.gen[Model]
   given jsonCodec: JsonCodec[Model] = DeriveJsonCodec.gen[Model]
 }
 //sealed trait Model
@@ -50,16 +51,7 @@ object Model {
 //  def keepAlive: Option[String]
 //}
 
-case class Prompt(
-    content: String,
-    role: String
-)
-
-object Prompt {
-  implicit val schema: Schema[Prompt] = DeriveSchema.gen[Prompt]
-}
-
-case class Docs(
+case class Doc(
    collection_name: String,
    content: Chunk[Tag],
    filename: String,
@@ -69,8 +61,9 @@ case class Docs(
    user_id: String
 )
 
-object Docs {
-  implicit val schema: Schema[Docs] = DeriveSchema.gen[Docs]
+object Doc {
+  implicit val schema: Schema[Doc] = DeriveSchema.gen[Doc]
+
 }
 
 case class PromptRequest(
@@ -85,9 +78,9 @@ case class PromptRequest(
     raw: Option[Boolean] = None,
     keep_alive: Option[String] = None,
     chat_id: String,
-    citations: Option[Boolean] = Some(true),
+    citations: Option[Boolean] = Some(false),
     messages: Chunk[Prompt],
-    docs: Chunk[Docs]
+    docs: Chunk[Doc]
 )
 
 object PromptRequest {
@@ -108,4 +101,37 @@ object PromptRequest {
 //  ) extends PromptRequest
   implicit val schema: Schema[PromptRequest] = DeriveSchema.gen[PromptRequest]
 
+  def buildMock = PromptRequest(
+    chat_id = "09cc2909-7f43-4f83-8d82-20f63027e07e",
+    docs = Chunk(
+            Doc(
+              collection_name = "e87e6929a7c4ed6633c596fda5bfc83da27b97df82b7b97332f4cb7d040be74",
+              content = Chunk(Tag("Trading"), Tag("Futures"), Tag("Abbreviation")),
+              filename = "Glossary.docx",
+              name = "glossarydocx",
+              title = "Glossary.docx",
+              `type` = "doc",
+              user_id = "761229f2-e5d1-4e7d-bd52-b10535578e4f"
+            )),
+    messages = 
+          Chunk(
+            Prompt(
+              content = "what does FCM mean in trading?",
+              role = "user"
+            ),
+            Prompt(
+              content = "In trading, FCM stands for Futures Commissions Merchant. A Futures Commissions Merchant (FCM) is a firm that solicits or accepts orders for futures or options contracts traded on an exchange and accepts money (or securities or property) from a customer to margin, guarantee or secure the option or futures transaction.",
+              role = "assistant"
+            ),
+            Prompt(
+              content = "what's a Speculator in trading",
+              role = "user"
+            ),
+            Prompt(
+              content = "A Speculator is a trader who takes on risk by buying or selling futures contracts with the goal of making a profit. They don't actually use the underlying asset, such as commodities or currencies, but instead, they trade based on market fluctuations.",
+              role = "assistant"
+            )
+          ),
+    model = `llama3:8b`
+  )
 }

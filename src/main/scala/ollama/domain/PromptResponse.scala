@@ -3,6 +3,7 @@ package domain
 
 import zio.*
 import zio.json.*
+import zio.schema.*
 
 /*
  * total_duration: time spent generating the response
@@ -17,17 +18,12 @@ import zio.json.*
 @jsonMemberNames(SnakeCase)
 @jsonHintNames(SnakeCase)
 case class PromptResponse(
-    total_duration: Long,
-    load_duration: Long,
-    prompt_eval_count: Option[Long],
-    prompt_eval_duration: Long,
-    eval_count: Long,
-    eval_duration: Long,
-    context: Chunk[Int],
-    response: Option[String],
-    done: Option[Boolean]
+   model: String,
+   message: Prompt
 )
+
 object PromptResponse {
-//  given schema: Schema[PromptResponse] = DeriveSchema.gen[PromptResponse]
+  
+  given schema: Schema[PromptResponse] = DeriveSchema.gen[PromptResponse]
   given jsonCodec: JsonCodec[PromptResponse] = DeriveJsonCodec.gen[PromptResponse]
 }

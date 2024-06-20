@@ -11,8 +11,8 @@ object Main extends ZIOAppDefault:
     for {
       authorization <- OLlamaAdapter.auth(AuthRequest("cesar.laurentin@ninjatrader.com", "Arepa123++"))
       documents     <- OLlamaAdapter.getDocuments(authorization.token)
-      //answers       <- OLlamaAdapter.executePrompt()
-      _             <- Console.ConsoleLive.printLine(documents)
+      answers       <- OLlamaAdapter.executePrompt(authorization.token, buildMock)
+      _             <- Console.ConsoleLive.printLine(answers)
     } yield ()
 
   def run: ZIO[Any, Object, Unit] = app.provide(Client.default, OLlamaAdapter.live)
