@@ -11,7 +11,8 @@ object Main extends ZIOAppDefault:
     for {
       authorization <- OLlamaAdapter.auth(AuthRequest("cesar.laurentin@ninjatrader.com", "Arepa123++"))
       documents     <- OLlamaAdapter.getDocuments(authorization.token)
-      answers       <- OLlamaAdapter.executePrompt(authorization.token, buildMock)
+      chats         <- OLlamaAdapter.getChats(authorization.token)
+      answers       <- OLlamaAdapter.executePrompt(authorization.token, buildPromptRequest(chats, "define FCM in less than 20 words", documents))
       _             <- Console.ConsoleLive.printLine(answers)
     } yield ()
 

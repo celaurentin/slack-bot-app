@@ -23,6 +23,7 @@ case class OllamaDocument(
     user_id: String,
     content: Content
 )
+
 object OllamaDocument {
   given schema: Schema[OllamaDocument]       = DeriveSchema.gen[OllamaDocument]
   given jsonCodec: JsonCodec[OllamaDocument] = DeriveJsonCodec.gen[OllamaDocument]

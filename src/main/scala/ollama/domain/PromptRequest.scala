@@ -101,37 +101,32 @@ object PromptRequest {
 //  ) extends PromptRequest
   implicit val schema: Schema[PromptRequest] = DeriveSchema.gen[PromptRequest]
 
-  def buildMock = PromptRequest(
-    chat_id = "09cc2909-7f43-4f83-8d82-20f63027e07e",
-    docs = Chunk(
-            Doc(
-              collection_name = "e87e6929a7c4ed6633c596fda5bfc83da27b97df82b7b97332f4cb7d040be74",
-              content = Chunk(Tag("Trading"), Tag("Futures"), Tag("Abbreviation")),
-              filename = "Glossary.docx",
-              name = "glossarydocx",
-              title = "Glossary.docx",
-              `type` = "doc",
-              user_id = "761229f2-e5d1-4e7d-bd52-b10535578e4f"
-            )),
-    messages = 
-          Chunk(
-            Prompt(
-              content = "what does FCM mean in trading?",
-              role = "user"
-            ),
-            Prompt(
-              content = "In trading, FCM stands for Futures Commissions Merchant. A Futures Commissions Merchant (FCM) is a firm that solicits or accepts orders for futures or options contracts traded on an exchange and accepts money (or securities or property) from a customer to margin, guarantee or secure the option or futures transaction.",
-              role = "assistant"
-            ),
-            Prompt(
-              content = "what's a Speculator in trading",
-              role = "user"
-            ),
-            Prompt(
-              content = "A Speculator is a trader who takes on risk by buying or selling futures contracts with the goal of making a profit. They don't actually use the underlying asset, such as commodities or currencies, but instead, they trade based on market fluctuations.",
-              role = "assistant"
-            )
-          ),
-    model = `llama3:8b`
-  )
+  private def buildDocs(ollamaDocuments: Chunk[OllamaDocument]): Chunk[Doc] =
+    ollamaDocuments.map { odoc =>
+      Doc(
+        collection_name = odoc.collection_name,
+        content = odoc.content.tags.getOrElse(Chunk.empty),
+        filename = odoc.filename,
+        name = odoc.name,
+        title = odoc.title,
+        `type` = odoc.title,
+        user_id = odoc.user_id
+      )
+    }
+
+  def buildPromptRequest(chats: Chunk[OllamaChat],userQuery: String, documents: Chunk[OllamaDocument]): PromptRequest = {
+    val chat = chats.filter(_.title=="New Chat").headOption.getOrElse(OllamaChat("09cc2909-7f43-4f83-8d82-20f63027e07e","Default"))
+    PromptRequest(
+      chat_id = chat.id,
+      docs = buildDocs(documents),
+      messages =
+        Chunk(
+          Prompt(
+            content = userQuery,
+            role = "user"
+          )
+        ),
+      model = `llama3:8b`
+    )
+  }
 }
