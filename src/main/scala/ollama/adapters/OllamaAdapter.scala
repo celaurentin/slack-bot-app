@@ -1,4 +1,5 @@
-package ollama.adapters
+package ollama
+package adapters
 
 import domain.*
 import ollama.domain.*
