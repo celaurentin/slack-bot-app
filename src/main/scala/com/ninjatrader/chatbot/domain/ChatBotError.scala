@@ -4,6 +4,7 @@ package domain
 
 sealed trait ChatBotError
 object ChatBotError {
+  case class AIIntegrationError(message: String)             extends ChatBotError
   case class UnableToRegisterGlobalShortcut(message: String) extends ChatBotError
   case class UnableToRegisterViewSubmission(message: String) extends ChatBotError
   case class UnableToRegisterCommand(message: String)        extends ChatBotError

@@ -12,6 +12,7 @@ import zio.*
 import zio.json.*
 import domain.*
 import ollama.adapters.OLlamaAdapter
+import ollama.domain.PromptRequest
 
 trait ChatBotService {
 
@@ -41,23 +42,25 @@ object ChatBotService {
     }
 
     private def tellme: ZIO[SlashCommandRequest & SlashCommandContext, ChatBotError, Response] = for {
-      _   <- ZIO.unit
-      req <- ZIO.service[SlashCommandRequest]
-      ctx <- ZIO.service[SlashCommandContext]
-      _            = ctx.ack()
-      userQuestion = req.getPayload.getText
-      userId       = req.getPayload.getUserId
-      userName     = req.getPayload.getUserName
-      channelId    = req.getPayload.getChannelId
-      channelName  = req.getPayload.getChannelName
-
-      _ <- ZIO.log(s"Question: $userQuestion, User: $userName - $userId, Channel: $channelId, Channel name: $channelName")
-
+      req                    <- ZIO.service[SlashCommandRequest]
+      ctx                    <- ZIO.service[SlashCommandContext]
+      _                       = ctx.ack()
+      userQuestion            = req.getPayload.getText
+      userId                  = req.getPayload.getUserId
+      userName                = req.getPayload.getUserName
+      channelId               = req.getPayload.getChannelId
+      channelName             = req.getPayload.getChannelName
+      _                      <- ZIO.log(s"Question: $userQuestion, User: $userName - $userId, Channel: $channelId, Channel name: $channelName")
       nextInt                 = scala.util.Random.nextInt(postMessages.length)
       friendlyResponseMessage = s"""You've asked: "*$userQuestion*"... ${postMessages(nextInt)}"""
       _                       = ctx.respond(buildCommandResponse(friendlyResponseMessage))
       _                       = ctx.ack()
-      actualAnswer            = s"<the actual answer goes here>"
+      documents              <- ollamaAdapter.getDocuments.mapError(e => ChatBotError.AIIntegrationError("error getting documents"))
+      chats                  <- ollamaAdapter.getChats.mapError(e => ChatBotError.AIIntegrationError("error getting chats"))
+      answers                <- ollamaAdapter
+                                  .executePrompt(PromptRequest.buildPromptRequest(chats, userQuestion, documents))
+                                  .mapError(e => ChatBotError.AIIntegrationError("error executing prompt"))
+      actualAnswer            = answers.message.content
       _                       = ctx.respond(buildCommandResponse(actualAnswer))
       result                  = ctx.ack()
     } yield result
