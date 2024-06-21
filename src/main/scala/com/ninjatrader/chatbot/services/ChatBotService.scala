@@ -52,7 +52,7 @@ object ChatBotService {
       channelName             = req.getPayload.getChannelName
       _                      <- ZIO.log(s"Question: $userQuestion, User: $userName - $userId, Channel: $channelId, Channel name: $channelName")
       nextInt                 = scala.util.Random.nextInt(postMessages.length)
-      friendlyResponseMessage = s"""You've asked: "*$userQuestion*"... ${postMessages(nextInt)}"""
+      friendlyResponseMessage = s"""$userName have asked: "*$userQuestion*"... ${postMessages(nextInt)}"""
       _                       = ctx.respond(buildCommandResponse(friendlyResponseMessage))
       _                       = ctx.ack()
       documents              <- ollamaAdapter.getDocuments.mapError(e => ChatBotError.AIIntegrationError("error getting documents"))
