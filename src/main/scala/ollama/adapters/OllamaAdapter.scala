@@ -63,6 +63,7 @@ object OLlamaAdapter {
 
       for {
         bearerToken <- token.get
+        _           <- Console.ConsoleLive.printLine(s"bearerToken: ${promptRequest.docs.map(_.title)}").ignore
         request      = Request.post(promptURL, Body.from(promptRequest)).addHeader(Header.Authorization.Bearer(bearerToken))
         response    <- client.request(request).mapError(e => ConnectionOLlamaError(e.toString))
         _           <- Console.ConsoleLive.printLine(s"executePrompt status response: ${response.status} ${response.status.code}").ignore
