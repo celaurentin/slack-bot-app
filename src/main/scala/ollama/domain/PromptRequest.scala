@@ -114,8 +114,11 @@ object PromptRequest {
       )
     }
 
-  def buildPromptRequest(chats: Chunk[OllamaChat],userQuery: String, documents: Chunk[OllamaDocument]): PromptRequest = {
-    val chat = chats.filter(_.title=="New Chat").headOption.getOrElse(OllamaChat("09cc2909-7f43-4f83-8d82-20f63027e07e","Default"))
+  private val chatId = "09cc2909-7f43-4f83-8d82-20f63027e07e"
+//  private val chatId = "204aee60-fecc-4e73-b3a7-33a903249e4b"
+
+  def buildPromptRequest(chats: Chunk[OllamaChat], userQuery: String, documents: Chunk[OllamaDocument]): PromptRequest = {
+    val chat = chats.filter(_.title == "New Chat").headOption.getOrElse(OllamaChat(chatId, "Default"))
     PromptRequest(
       chat_id = chat.id,
       docs = buildDocs(documents),
