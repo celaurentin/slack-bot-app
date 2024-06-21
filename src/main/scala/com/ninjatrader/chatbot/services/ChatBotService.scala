@@ -66,7 +66,8 @@ object ChatBotService {
     } yield result
 
     def app: IO[ChatBotError, Unit] = for {
-      _ <- ZIO.unit
+      _ <- ollamaAdapter.startSessionManger.mapError(_ => ChatBotError.AIIntegrationError("unable to start session manager"))
+      _ <- Console.ConsoleLive.printLine("session started").ignore
       _ <- slackAppAdapter.registerGlobalShortcut
       _ <- slackAppAdapter.registerViewSubmission
       _ <- slackAppAdapter.command("/tellme", tellme)
